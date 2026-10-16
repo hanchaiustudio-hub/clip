@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clip Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1f2937; --line:#d7dbe3; --bg:#f4f6f9; --card:#ffffff; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Kanit", "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    padding: 20px 24px 4px;
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 500; }
+  header p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    background: rgba(244, 246, 249, .92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    z-index: 5;
+  }
+  button {
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button:hover { border-color: #9aa3b2; }
+  button.primary { background: #2f6b3f; border-color: #2f6b3f; color: #fff; }
+  .stage {
+    position: relative;
+    margin: 20px 24px 40px;
+    height: 420px;
+    border: 2px dashed #c3c9d4;
+    border-radius: 14px;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--card);
+    overflow: hidden;
+  }
+  .stage-hint {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    transform: translateX(-50%);
+    color: #9aa3b2;
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .log {
+    margin: 0 24px 40px;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 12px;
+    color: #4b5563;
+    max-height: 180px;
+    overflow: auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .log div { padding: 1px 0; }
+  label.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #4b5563;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Clip &mdash; reusable paperclip buddy</h1>
+    <p>Every button drives the public <code>Clip</code> API. Click inside the stage to walk there.</p>
+  </header>
+
+  <div class="toolbar">
+    <button id="btn-greet" class="primary">Greet</button>
+    <button id="btn-appear">Appear</button>
+    <button id="btn-blink1">Blink 1</button>
+    <button id="btn-blink2">Blink 2</button>
+    <button id="btn-say">Say</button>
+    <button id="btn-hide">Hide bubble</button>
+    <button id="btn-pop">Pop</button>
+    <button id="btn-disappear">Disappear</button>
+    <button id="btn-play">Play sequence</button>
+    <button id="btn-destroy">Destroy</button>
+    <button id="btn-create">New instance</button>
+    <label class="toggle"><input type="checkbox" id="dark"> dark</label>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage-hint">click to walk here</div>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <script src="./clip.js"></script>
+  <script>
+    var stage = document.getElementById('stage');
+    var logEl = document.getElementById('log');
+    var darkBox = document.getElementById('dark');
+
+    function log(msg) {
+      var d = document.createElement('div');
+      d.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    var clip = null;
+
+    function build() {
+      if (clip) clip.destroy();
+      clip = window.Clip.create({
+        container: stage,
+        position: 'absolute',
+        x: 40,
+        y: 300,
+        dark: darkBox.checked
+      });
+      clip.on('appear', function () { log('event: appear'); });
+      clip.on('say', function (e) { log('event: say "' + e.text + '"'); });
+      clip.on('blink', function (e) { log('event: blink x' + e.times); });
+      clip.on('move', function (e) { log('event: move -> ' + Math.round(e.x) + ',' + Math.round(e.y)); });
+      clip.on('pop', function () { log('event: pop'); });
+      clip.on('disappear', function () { log('event: disappear'); });
+      return clip;
+    }
+
+    build();
+    log('Clip v' + window.Clip.version + ' ready');
+
+    document.getElementById('btn-greet').onclick = function () {
+      clip.greet('RDU Product', { hold: 3000 }).then(function () { log('greet() done'); });
+    };
+    document.getElementById('btn-appear').onclick = function () {
+      clip.appear().then(function () { log('appear() done'); });
+    };
+    document.getElementById('btn-blink1').onclick = function () {
+      clip.blink(1).then(function () { log('blink(1) done'); });
+    };
+    document.getElementById('btn-blink2').onclick = function () {
+      clip.blink(2).then(function () { log('blink(2) done'); });
+    };
+    document.getElementById('btn-say').onclick = function () {
+      clip.say('Hello there!', { duration: 2500 }).then(function () { log('say() done'); });
+    };
+    document.getElementById('btn-hide').onclick = function () {
+      clip.hideBubble().then(function () { log('hideBubble() done'); });
+    };
+    document.getElementById('btn-pop').onclick = function () {
+      clip.pop().then(function () { log('pop() done'); });
+    };
+    document.getElementById('btn-disappear').onclick = function () {
+      clip.disappear({ duration: 400 }).then(function () { log('disappear() done'); });
+    };
+    document.getElementById('btn-play').onclick = function () {
+      clip.play([
+        { do: 'appear' },
+        { do: 'blink', args: [2] },
+        { do: 'say', args: ['Playing a scripted sequence', { duration: 1500 }] },
+        { do: 'blink', args: [1] },
+        { do: 'pop' }
+      ]).then(function () { log('play() done'); });
+    };
+    document.getElementById('btn-destroy').onclick = function () {
+      clip.destroy();
+      clip = null;
+      log('destroy()');
+    };
+    document.getElementById('btn-create').onclick = function () {
+      build();
+      log('create()');
+    };
+    darkBox.onchange = function () { build(); log('dark = ' + darkBox.checked); };
+
+    stage.onclick = function (ev) {
+      if (!clip || !clip.el) { log('no instance'); return; }
+      var r = stage.getBoundingClientRect();
+      clip.walkTo(ev.clientX - r.left, ev.clientY - r.top, { duration: 900 }).then(function () {
+        log('walkTo() done');
+      });
+    };
+  </script>
+</body>
+</html>
