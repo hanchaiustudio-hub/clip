@@ -51,6 +51,7 @@ Creates a character on the page and returns a `Clip` instance.
 | `blink2Ms` | number | `1400` | Default double-blink duration. |
 | `bubbleMs` | number | `400` | Default speech-bubble transition. |
 | `popMs` | number | `1000` | Default pop-out duration. |
+| `turnMs` | number | `900` | Default turn (swivel) duration. |
 
 Every method accepts an `options` object whose `duration` (or the matching
 `*Ms` key) overrides the instance default for that call.
@@ -76,6 +77,16 @@ clip.appear().then(function () { return clip.say('Hi'); }).then(function () {
 | `moveBy(dx, dy, opts?)` | Slide by a delta. `opts.duration`. |
 | `setPosition(x, y)` | Jump to a position (no animation). Returns the instance. |
 | `getPosition()` | Returns `{ x, y }`. |
+
+### Orientation
+
+The character faces right by default. Turning swivels it around its vertical axis
+and the new facing persists until you change it.
+
+| Method | Description |
+| --- | --- |
+| `turnLeft(opts?)` | Swivel to face left. `opts.duration`. Turning left while already facing left replays a full 360° spin. |
+| `turnRight(opts?)` | Swivel to face right. `opts.duration`. Turning right while already facing right replays a full 360° spin. |
 
 ### Expression
 
@@ -106,15 +117,15 @@ clip.play([
 
 | Method | Description |
 | --- | --- |
-| `on(name, fn)` / `off(name, fn)` | Subscribe/unsubscribe. Names: `appear`, `disappear`, `move`, `blink`, `say`, `pop`. |
+| `on(name, fn)` / `off(name, fn)` | Subscribe/unsubscribe. Names: `appear`, `disappear`, `move`, `turn`, `blink`, `say`, `pop`. |
 | `destroy()` | Clear timers, handlers, and remove the element. |
 
 ## Styling
 
 The look is driven by CSS classes and variables on `.clip-root`:
 
-- State classes: `is-on`, `is-say`, `is-blink1`, `is-blink2`, `is-pop`, `is-move`.
-- Variables: `--clip-scale`, `--clip-walk`, `--clip-move`, `--clip-blink1`,
+- State classes: `is-on`, `is-say`, `is-blink1`, `is-blink2`, `is-pop`, `is-move`, `clip-face-left`.
+- Variables: `--clip-scale`, `--clip-walk`, `--clip-move`, `--clip-turn`, `--clip-blink1`,
   `--clip-blink2`, `--clip-bubble`, `--clip-pop`.
 - Themes: `clip-dark`, `clip-no-pointer`.
 

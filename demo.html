@@ -103,6 +103,8 @@
     <button id="btn-blink2">Blink 2</button>
     <button id="btn-say">Say</button>
     <button id="btn-hide">Hide bubble</button>
+    <button id="btn-turn-l">Turn left</button>
+    <button id="btn-turn-r">Turn right</button>
     <button id="btn-pop">Pop</button>
     <button id="btn-disappear">Disappear</button>
     <button id="btn-play">Play sequence</button>
@@ -145,6 +147,7 @@
       clip.on('say', function (e) { log('event: say "' + e.text + '"'); });
       clip.on('blink', function (e) { log('event: blink x' + e.times); });
       clip.on('move', function (e) { log('event: move -> ' + Math.round(e.x) + ',' + Math.round(e.y)); });
+      clip.on('turn', function (e) { log('event: turn ' + e.direction); });
       clip.on('pop', function () { log('event: pop'); });
       clip.on('disappear', function () { log('event: disappear'); });
       return clip;
@@ -170,6 +173,12 @@
     };
     document.getElementById('btn-hide').onclick = function () {
       clip.hideBubble().then(function () { log('hideBubble() done'); });
+    };
+    document.getElementById('btn-turn-l').onclick = function () {
+      clip.turnLeft().then(function () { log('turnLeft() done'); });
+    };
+    document.getElementById('btn-turn-r').onclick = function () {
+      clip.turnRight().then(function () { log('turnRight() done'); });
     };
     document.getElementById('btn-pop').onclick = function () {
       clip.pop().then(function () { log('pop() done'); });

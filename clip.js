@@ -1,12 +1,12 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
 
   var SVG = '<svg class="clip-svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 50 V20 a8 8 0 0 1 16 0 V50 a6 6 0 0 1 -12 0 V22"/></svg>';
 
   var CSS = [
-    '.clip-root{position:fixed;left:0;top:0;z-index:9999;display:flex;align-items:flex-end;gap:8px;pointer-events:none;opacity:0;visibility:hidden;transform:scale(var(--clip-scale,1));transform-origin:left bottom;font-family:"Kanit","Segoe UI",system-ui,sans-serif}',
+    '.clip-root{position:fixed;left:0;top:0;z-index:9999;display:flex;align-items:flex-end;gap:8px;pointer-events:none;opacity:0;visibility:hidden;transform:scale(var(--clip-scale,1));transform-origin:left bottom;perspective:600px;font-family:"Kanit","Segoe UI",system-ui,sans-serif}',
     '.clip-root.is-move{transition:left var(--clip-move,1200ms) ease-in-out,top var(--clip-move,1200ms) ease-in-out}',
     '.clip-root.is-on{opacity:1;visibility:visible;animation:clip-walk var(--clip-walk,2000ms) ease-out both}',
     '.clip-root.clip-from-right.is-on{animation-name:clip-walk-r}',
@@ -14,7 +14,7 @@
     '@keyframes clip-walk-r{0%{transform:translateX(48px) scale(var(--clip-scale,1));opacity:0}70%{transform:translateX(-3px) scale(var(--clip-scale,1));opacity:1}100%{transform:translateX(0) scale(var(--clip-scale,1));opacity:1}}',
     '.clip-root.is-pop{animation:clip-pop var(--clip-pop,1000ms) ease-in forwards}',
     '@keyframes clip-pop{0%{transform:scale(var(--clip-scale,1));opacity:1}45%{transform:scale(calc(var(--clip-scale,1) * 1.18));opacity:1}100%{transform:scale(calc(var(--clip-scale,1) * .3));opacity:0}}',
-    '.clip-body{position:relative;width:46px;height:46px;flex:0 0 auto;color:#4b6b1f}',
+    '.clip-body{position:relative;width:46px;height:46px;flex:0 0 auto;color:#4b6b1f;transition:transform var(--clip-turn,900ms) ease-in-out}',
     '.clip-body svg{display:block;width:46px;height:46px}',
     '.clip-eye{position:absolute;width:4px;height:4px;border-radius:50%;background:#2f3b17;transform-origin:center}',
     '.clip-eye:nth-of-type(1){left:54%;top:37%}',
@@ -31,7 +31,12 @@
     '.clip-root.clip-dark .clip-eye{background:#cbd5e1}',
     '.clip-root.clip-dark .clip-bubble{background:#0f172a;border-color:#334155;color:#f2f6f2}',
     '.clip-root.clip-dark .clip-bubble::before{border-right-color:#334155}',
-    '@media (prefers-reduced-motion: reduce){.clip-root.is-on{animation-duration:1ms}.clip-root.is-pop{animation-duration:1ms}}'
+    '.clip-root.clip-face-left .clip-body{transform:rotateY(180deg)}',
+    '.clip-root.is-turn-spin-l .clip-body{animation:clip-turn-spin-l var(--clip-turn,900ms) ease-in-out}',
+    '.clip-root.is-turn-spin-r .clip-body{animation:clip-turn-spin-r var(--clip-turn,900ms) ease-in-out}',
+    '@keyframes clip-turn-spin-l{from{transform:rotateY(180deg)}to{transform:rotateY(540deg)}}',
+    '@keyframes clip-turn-spin-r{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}',
+    '@media (prefers-reduced-motion: reduce){.clip-root.is-on{animation-duration:1ms}.clip-root.is-pop{animation-duration:1ms}.clip-root .clip-body{transition-duration:1ms}}'
   ].join('\n');
 
   function injectStyles(opts) {
@@ -221,6 +226,28 @@
       return self;
     });
   };
+
+  Clip.prototype._turn = function (dir, opts) {
+    opts = opts || {};
+    var d = opts.duration != null ? opts.duration : cfg(this, opts, 'turnMs', 900);
+    var wantLeft = dir === 'left';
+    var isLeft = this.el.classList.contains('clip-face-left');
+    this.el.style.setProperty('--clip-turn', d + 'ms');
+    this._emit('turn', { direction: dir });
+    var self = this;
+    if (wantLeft === isLeft) {
+      var spin = wantLeft ? 'is-turn-spin-l' : 'is-turn-spin-r';
+      this.el.classList.add(spin);
+      void this.el.offsetWidth;
+      return this._delay(d).then(function () { self.el.classList.remove(spin); return self; });
+    }
+    this.el.classList.toggle('clip-face-left', wantLeft);
+    return this._delay(d);
+  };
+
+  Clip.prototype.turnLeft = function (opts) { return this._turn('left', opts); };
+
+  Clip.prototype.turnRight = function (opts) { return this._turn('right', opts); };
 
   Clip.prototype.greet = function (text, opts) {
     opts = opts || {};

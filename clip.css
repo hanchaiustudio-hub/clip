@@ -11,6 +11,7 @@
   visibility: hidden;
   transform: scale(var(--clip-scale, 1));
   transform-origin: left bottom;
+  perspective: 600px;
   font-family: "Kanit", "Segoe UI", system-ui, sans-serif;
 }
 .clip-root.is-move {
@@ -48,6 +49,7 @@
   height: 46px;
   flex: 0 0 auto;
   color: #4b6b1f;
+  transition: transform var(--clip-turn, 900ms) ease-in-out;
 }
 .clip-body svg {
   display: block;
@@ -113,7 +115,19 @@
   color: #f2f6f2;
 }
 .clip-root.clip-dark .clip-bubble::before { border-right-color: #334155; }
+.clip-root.clip-face-left .clip-body { transform: rotateY(180deg); }
+.clip-root.is-turn-spin-l .clip-body { animation: clip-turn-spin-l var(--clip-turn, 900ms) ease-in-out; }
+.clip-root.is-turn-spin-r .clip-body { animation: clip-turn-spin-r var(--clip-turn, 900ms) ease-in-out; }
+@keyframes clip-turn-spin-l {
+  from { transform: rotateY(180deg); }
+  to   { transform: rotateY(540deg); }
+}
+@keyframes clip-turn-spin-r {
+  from { transform: rotateY(0); }
+  to   { transform: rotateY(360deg); }
+}
 @media (prefers-reduced-motion: reduce) {
   .clip-root.is-on { animation-duration: 1ms; }
   .clip-root.is-pop { animation-duration: 1ms; }
+  .clip-root .clip-body { transition-duration: 1ms; }
 }
